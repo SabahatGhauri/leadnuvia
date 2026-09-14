@@ -4,7 +4,7 @@ AI sales conversations for **leadnuvia.com**.
 
 The `feat/working-saas` branch contains the first application implementation: email authentication, private workspaces, configurable agents, pasted/website knowledge, streaming website chat, consent-based contact capture, a conversation dashboard, and CSV export.
 
-AI providers are configurable: Groq, Cerebras, Gemini, OpenRouter, or OpenAI. Optional failover is explicit and only happens before any answer text has been sent. See [provider setup](docs/LLM_PROVIDERS.md).
+AI providers are configurable: Anthropic Claude, Groq, Cerebras, Gemini, OpenRouter, or OpenAI. Optional failover is explicit and only happens before any answer text has been sent. See [provider setup](docs/LLM_PROVIDERS.md).
 
 The live `main` branch remains the coming-soon deployment until Supabase, an AI provider, and real end-to-end checks are ready.
 

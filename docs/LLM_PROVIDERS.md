@@ -1,6 +1,16 @@
 # AI providers
 
-LeadNuvia uses a server-side streaming adapter with explicit provider/model selection. It supports Groq, Cerebras, Gemini's OpenAI-compatible API, OpenRouter, and OpenAI. Model availability and account quotas must be checked in the provider dashboard before deployment.
+LeadNuvia uses a server-side streaming adapter with explicit provider/model selection. It supports Anthropic Claude through the native Messages API, plus Groq, Cerebras, Gemini's OpenAI-compatible API, OpenRouter, and OpenAI. Model availability and account quotas must be checked in the provider dashboard before deployment.
+
+Claude is the initial configuration for this project. Set these in Railway's service variables:
+
+```
+LLM_PROVIDER=anthropic
+LLM_MODEL=claude-haiku-4-5-20251001
+ANTHROPIC_API_KEY=<set privately in Railway>
+```
+
+Haiku 4.5 is the initial model to evaluate for short sales conversations. Change LLM_MODEL to an available Sonnet model if evaluation shows a need for stronger answers. Native Claude requests preserve the system prompt separately from conversation history and only display text deltas. Thinking deltas are not displayed. Incomplete or token-limited replies are treated as failures. A live API test is required after the key is configured.
 
 Example for evaluating Groq (confirm access to this model first):
 
@@ -25,6 +35,9 @@ Fallback is limited to connection errors, HTTP 429, or HTTP 5xx before any answe
 Keep replies short and retrieve relevant knowledge passages instead of sending a whole website. Use one model call per answer; lead intent is transparently scored with lightweight keyword rules, not a second AI request. Benchmark answer correctness, first-token latency, failure rates, and tokens per conversation before choosing the production model.
 
 Official references checked September 14, 2026:
+
+- https://platform.claude.com/docs/en/models/overview
+- https://platform.claude.com/docs/en/build-with-claude/streaming
 
 - https://console.groq.com/docs/openai
 - https://console.groq.com/docs/models

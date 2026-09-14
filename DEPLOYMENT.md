@@ -26,17 +26,17 @@ The app uses cookie-based PKCE sessions. Confirmation and reset links must compl
 
 Add these to the ORIGINAL service's Variables panel (never to GitHub or chat):
 
-| Variable                      | Value                                                                           |
-| ----------------------------- | ------------------------------------------------------------------------------- |
-| NEXT_PUBLIC_APP_URL           | https://leadnuvia.com                                                           |
-| NEXT_PUBLIC_SUPABASE_URL      | Supabase project URL                                                            |
-| NEXT_PUBLIC_SUPABASE_ANON_KEY | Supabase public anon/publishable key                                            |
-| SUPABASE_SERVICE_ROLE_KEY     | Supabase service-role key (server only)                                         |
-| WIDGET_SIGNING_SECRET         | A unique random secret of at least 32 characters                                |
-| LLM_PROVIDER                  | groq, cerebras, gemini, openrouter, or openai                                   |
-| LLM_MODEL                     | An exact currently available model ID from that provider                        |
-| GROQ_API_KEY                  | Required if selecting Groq; use the equivalent provider key for other providers |
-| FIRECRAWL_API_KEY             | Optional: enables importing individual website pages                            |
+| Variable                      | Value                                                    |
+| ----------------------------- | -------------------------------------------------------- |
+| NEXT_PUBLIC_APP_URL           | https://leadnuvia.com                                    |
+| NEXT_PUBLIC_SUPABASE_URL      | Supabase project URL                                     |
+| NEXT_PUBLIC_SUPABASE_ANON_KEY | Supabase public anon/publishable key                     |
+| SUPABASE_SERVICE_ROLE_KEY     | Supabase service-role key (server only)                  |
+| WIDGET_SIGNING_SECRET         | A unique random secret of at least 32 characters         |
+| LLM_PROVIDER                  | anthropic, groq, cerebras, gemini, openrouter, or openai |
+| LLM_MODEL                     | An exact currently available model ID from that provider |
+| ANTHROPIC_API_KEY             | Your Claude API key; required for LLM_PROVIDER=anthropic |
+| FIRECRAWL_API_KEY             | Optional: enables importing individual website pages     |
 
 Generate WIDGET_SIGNING_SECRET privately with a password manager (64 random characters). Pasted knowledge works without Firecrawl. See docs/LLM_PROVIDERS.md for all provider keys and opt-in fallback settings. No OpenAI account is required when another provider is selected.
 

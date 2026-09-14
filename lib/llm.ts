@@ -1,5 +1,7 @@
 import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 export const providers = {
+  anthropic: { baseURL: "https://api.anthropic.com", key: "ANTHROPIC_API_KEY" },
   groq: { baseURL: "https://api.groq.com/openai/v1", key: "GROQ_API_KEY" },
   cerebras: { baseURL: "https://api.cerebras.ai/v1", key: "CEREBRAS_API_KEY" },
   gemini: {
@@ -32,8 +34,65 @@ export function retryable(error: unknown) {
   return (
     status === 429 ||
     (typeof status === "number" && status >= 500) ||
-    error instanceof OpenAI.APIConnectionError
+    error instanceof OpenAI.APIConnectionError ||
+    error instanceof Anthropic.APIConnectionError
   );
+}
+
+async function* streamClaude(
+  config: ReturnType<typeof llmConfig>,
+  messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+  signal?: AbortSignal,
+) {
+  const system: string[] = [];
+  const conversation: Anthropic.MessageParam[] = [];
+  for (const message of messages) {
+    if (typeof message.content !== "string")
+      throw new Error("Claude sales chat requires text messages.");
+    if (message.role === "system" || message.role === "developer")
+      system.push(message.content);
+    else if (message.role === "user" || message.role === "assistant")
+      conversation.push({ role: message.role, content: message.content });
+    else throw new Error("Unsupported sales chat message role.");
+  }
+  const client = new Anthropic({
+    apiKey: config.apiKey,
+    baseURL: config.baseURL,
+    maxRetries: 0,
+    timeout: 45000,
+  });
+  const stream = await client.messages.create(
+    {
+      model: config.model,
+      system: system.join("\n\n"),
+      messages: conversation,
+      max_tokens: 1200,
+      stream: true,
+    },
+    { signal },
+  );
+  let ended = false;
+  let stopped = false;
+  let hasText = false;
+  for await (const event of stream) {
+    if (
+      event.type === "content_block_delta" &&
+      event.delta.type === "text_delta"
+    ) {
+      if (event.delta.text) {
+        hasText = true;
+        yield event.delta.text;
+      }
+    }
+    if (event.type === "message_delta" && event.delta.stop_reason) {
+      if (event.delta.stop_reason !== "end_turn")
+        throw new Error("Claude could not complete the reply.");
+      ended = true;
+    }
+    if (event.type === "message_stop") stopped = true;
+  }
+  if (!hasText || !ended || !stopped)
+    throw new Error("The Claude response ended unexpectedly.");
 }
 export async function* streamReply(
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
@@ -46,6 +105,13 @@ export async function* streamReply(
     const config = choices[index];
     let emitted = false;
     try {
+      if (config.provider === "anthropic") {
+        for await (const text of streamClaude(config, messages, signal)) {
+          emitted = true;
+          yield text;
+        }
+        return;
+      }
       const client = new OpenAI({
         apiKey: config.apiKey,
         baseURL: config.baseURL,
