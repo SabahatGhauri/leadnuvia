@@ -2,59 +2,21 @@
 
 AI sales conversations for **leadnuvia.com**.
 
-The current deployable version publishes a coming-soon page and health endpoint. The dashboard and integration routes remain blocked until authentication, tenant isolation, and the remaining blueprint features are complete.
+The `feat/working-saas` branch contains the first application implementation: email authentication, private workspaces, configurable agents, pasted/website knowledge, streaming website chat, consent-based contact capture, a conversation dashboard, and CSV export.
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for Railway setup and the application launch requirements.
+AI providers are configurable: Groq, Cerebras, Gemini, OpenRouter, or OpenAI. Optional failover is explicit and only happens before any answer text has been sent. See [provider setup](docs/LLM_PROVIDERS.md).
 
-Production build, TypeScript, launch page, health endpoint, and route-blocking checks passed locally.
+The live `main` branch remains the coming-soon deployment until Supabase, an AI provider, and real end-to-end checks are ready.
 
----
-# AI Sales Agent SaaS — Project Blueprint
+## Development
 
-This folder was organized from the uploaded planning/code document. It uses the advanced/later versions where the document contained multiple iterations of the same feature.
+Use Node 24, run `npm ci`, configure `.env.local` using `.env.example`, then `npm run dev`.
 
-## Core flow
+- `npm test`: PostgreSQL tenant isolation and service limits, signed-session checks, provider configuration, retrieval, and streaming behavior.
+- `npm run build`: production build including TypeScript validation.
 
-Client website → `public/widget.js` → `/embed/[agentId]` → `/api/chat/stream` → OpenAI + Supabase knowledge → streamed answer → background intent evaluation → lead update → optional Slack / booking action.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the exact migration, environment variables, and activation checklist. Run only the new `20260910000000_leadnuvia_app.sql` migration; older scripts are historical blueprint references.
 
-## Main folders
+## Scope
 
-- `app/api/` — chat, ingestion, lead evaluation, Stripe endpoints.
-- `app/dashboard/` — leads, settings, analytics.
-- `app/embed/` — iframe chat UI.
-- `components/` — chat, booking, analytics, billing, CSV and embed UI.
-- `hooks/` — client streaming hook.
-- `lib/` — Slack, Stripe and CSV helpers.
-- `public/` — embeddable `widget.js`.
-- `supabase/migrations/` — RLS and scheduled-job SQL.
-- `supabase/functions/` — scheduled Supabase Edge Function.
-- `supabase/reference/` — earlier baseline schema kept for reference only.
-
-## Suggested implementation order
-
-1. Copy `.env.example` to `.env.local` and fill secrets.
-2. Create Supabase project and run `20260909_rls_policies.sql`.
-3. Configure cron extensions/jobs only after the core app works.
-4. Install dependencies with `npm install`.
-5. Start with `npm run dev`.
-6. Test `/api/ingest` with one website and a real agent ID.
-7. Test the widget via `public/widget.js` and `/embed/[agentId]`.
-8. Test SSE chat streaming and source-grounded answers.
-9. Test lead capture and intent evaluation.
-10. Add Slack and Cal.com.
-11. Configure Stripe Checkout, webhook and customer portal.
-12. Verify analytics and CSV export.
-
-## Important security checks before production
-
-- Never expose `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, or `STRIPE_SECRET_KEY` in browser code.
-- Verify every public widget request is scoped to the requested agent and allowed domain.
-- Review the RLS migration carefully before enabling anonymous access.
-- Validate webhook signatures.
-- Add rate limiting to ingestion/chat endpoints.
-- Add abuse controls and per-plan usage limits.
-- Replace placeholder URLs, IDs, prompts and pricing before deployment.
-
-## Note
-
-The source document contains code written over several iterations. This package organizes that material; it should still be reviewed, linted and integration-tested before production deployment.
+Individual workspaces, up to three agents, twenty sources per agent, and one hundred messages per agent each calendar month. Lead intent uses explained keyword rules. Booking is an external scheduler link. Live model/auth/email integration is pending credentials; billing and team access are not included in this version.
